@@ -6,6 +6,7 @@ on:
     paths:
       - "srcpkgs/tofi/**"
       - "scripts/**"
+      - "examples/**"
       - ".github/workflows/build.yml"
       - "README.md"
   workflow_dispatch:
@@ -57,7 +58,8 @@ jobs:
             echo
             echo "- Void Linux: x86_64-musl"
             echo "- CPU: Intel Skylake / Core i3-6100U"
-            echo "- C/C++ flags: -march=skylake -mtune=skylake"
+            echo "- C compiler flags: -march=skylake -mtune=skylake"
+            echo "- Meson: optimization=2, LTO enabled"
             echo "- musl fts: musl-fts-devel, -lfts"
             echo "- Build host: GitHub-hosted runner (not the target CPU)"
           } >> "$GITHUB_STEP_SUMMARY"

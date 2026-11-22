@@ -10,9 +10,8 @@ This repository packages upstream tofi; it does not fork or modify the applicati
 - XBPS target: `x86_64-musl` only
 - CPU target: Intel Skylake (`-march=skylake -mtune=skylake`)
 - Reference CPU: Intel Core i3-6100U (2 cores / 4 threads)
-- Memory/storage profile: low-memory laptop; avoid unnecessary build-time or runtime overhead
-- Build system: Meson / Ninja
 - C library: musl
+- Build system: Meson / Ninja
 
 This is not a generic x86_64 binary. The Skylake compiler target can emit instructions unsupported by older x86_64 processors. It is not intended for pre-Skylake CPUs, glibc systems, or non-x86_64 architectures.
 
@@ -23,42 +22,39 @@ GitHub Actions builds the package on a hosted runner. The runner is only the bui
 The package recipe follows Void Linux's `srcpkgs/tofi/template` and adds:
 
 - `-march=skylake -mtune=skylake` for the Core i3-6100U CPU family.
-- Meson's `-Doptimization=2` release optimization level.
+- Meson's `-Doptimization=2` optimization level.
 - Meson's `-Db_lto=true` for link-time optimization.
-- `archs="x86_64-musl"` to prevent publishing binaries for other ABIs.
+- `archs="x86_64-musl"` to restrict the package ABI.
 - `musl-fts-devel` and `-lfts`, matching Void's musl-specific tofi fix.
 
-LTO is enabled through Meson rather than manually adding `-flto` to linker flags; Void's Meson build helper selects `gcc-ar` to handle LTO archives correctly.
+LTO is enabled through Meson rather than manually adding `-flto` to linker flags; Void's Meson build helper selects `gcc-ar` for LTO archive handling.
 
-The current package is **0.9.1-r2**. Revision 2 accounts for the new LTO-enabled build output.
+The current package is **0.9.1-r2**. Revision 2 accounts for the LTO-enabled build output.
 
-## Runtime profile for dwl
+## Runtime profile based on the actual setup config
 
-For an interactive launcher, runtime startup matters more than tiny compiler-flag changes. Upstream documents that giving tofi a **font file path** bypasses Pango/Fontconfig font-name lookup and loads the font directly with HarfBuzz/Cairo. This is the main startup optimization in the included profile.
+The [`examples/dwl-run.conf`](examples/dwl-run.conf) profile is based on [`rnicro/setup/HOME/.config/tofi/config`](https://github.com/rmicro/setup/blob/main/HOME/.config/tofi/config), rather than a generic theme.
 
-The repository includes [`examples/dwl-run.conf`](examples/dwl-run.conf), a compact top-of-screen, horizontal `tofi-run` profile. Before using it, replace its placeholder font path with an installed font file. For example:
+The existing configuration is already doing the most important tofi startup optimization: it specifies a **font file path** (`/usr/share/fonts/noto/NotoSansMono-Regular.ttf`). Upstream documents that this bypasses Pango/Fontconfig font-name lookup and uses the direct HarfBuzz/Cairo path. It also already has a short 30-pixel top ribbon, horizontal results, no borders/outlines, disabled history sorting, and direct drun launching.
 
-```sh
-fc-match -f '%{file}\n' 'DejaVu Sans Mono'
-```
+The only default runtime change in the example is `hint-font=false`. Upstream says disabling font hinting can speed text rendering when a font file path is used. At 14 pt it may be acceptable, but check glyph sharpness on the actual display; set it back to `true` if the text looks worse.
 
-Copy the resulting path into the profile's `font` setting, then install it as your user config:
+The profile intentionally preserves `num-results=0`, so all results that fit can be displayed. Upstream notes that specifying a fixed result count can reduce some horizontal-layout sizing work, but this option is a maximum-result cap. The profile includes `# num-results=8` as an opt-in experiment; uncomment it only if limiting the displayed choices is acceptable.
+
+It also keeps `ascii-input=false` so Unicode matching remains correct, and `late-keyboard-init=false` so early keypresses are not missed.
+
+Install the profile:
 
 ```sh
 mkdir -p ~/.config/tofi
 cp examples/dwl-run.conf ~/.config/tofi/config
-# Edit ~/.config/tofi/config and set font to the real path printed by fc-match.
 ```
 
-Run it with:
+The font path is taken from your current setup. Confirm it exists on the target system:
 
 ```sh
-tofi-run
+test -r /usr/share/fonts/noto/NotoSansMono-Regular.ttf
 ```
-
-The profile also keeps the drawn window short, uses horizontal mode and a fixed result count, and disables font hinting. Upstream notes that fixed `num-results` helps the horizontal layout path, while `hint-font=false` only applies when a font file path is used. Check text quality at your display's scale and adjust `font-size` as needed.
-
-I intentionally leave `late-keyboard-init=false`: upstream warns it can miss keypresses immediately after launch. `ascii-input=false` also stays enabled so Unicode matching remains correct. These are safer defaults for a daily launcher than chasing a marginal startup reduction.
 
 ## Local build
 
@@ -116,6 +112,7 @@ When updating tofi:
 
 - [Upstream tofi](https://github.com/philj56/tofi)
 - [Upstream performance notes](https://github.com/philj56/tofi#performance)
+- [Upstream configuration reference](https://github.com/philj56/tofi/blob/master/doc/config)
 - [Void Linux tofi package](https://github.com/void-linux/void-packages/tree/master/srcpkgs/tofi)
 - [Meson built-in optimization and LTO options](https://mesonbuild.com/Builtin-options.html)
 - [Void Linux XBPS source packages](https://github.com/void-linux/void-packages)

@@ -35,15 +35,18 @@ case "$checksum" in
         ;;
 esac
 
-grep -Fq 'horizontal = true' "$profile"
-grep -Fq 'num-results = 8' "$profile"
-grep -Fq 'hint-font = false' "$profile"
-grep -Fq 'late-keyboard-init = false' "$profile"
-grep -Fq 'ascii-input = false' "$profile"
+grep -Fq 'font=/usr/share/fonts/noto/NotoSansMono-Regular.ttf' "$profile"
+grep -Fq 'hint-font=false' "$profile"
+grep -Fq 'horizontal=true' "$profile"
+grep -Fq 'num-results=0' "$profile"
+grep -Fq 'history=false' "$profile"
+grep -Fq 'drun-launch=true' "$profile"
+grep -Fq 'ascii-input=false' "$profile"
+grep -Fq 'late-keyboard-init=false' "$profile"
 
 if grep -Fq 'fix-32bit-tests.patch' "$template"; then
     echo "The 32-bit-only downstream patch must not be enabled in this x86_64 package." >&2
     exit 1
 fi
 
-echo "tofi Skylake/musl/LTO and runtime profile invariants passed"
+echo "tofi Skylake/musl/LTO and device config checks passed"

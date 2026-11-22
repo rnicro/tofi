@@ -1,8 +1,9 @@
 # Template file for 'tofi'
 pkgname=tofi
 version=0.9.1
-revision=1
+revision=2
 build_style=meson
+configure_args="-Doptimization=2 -Db_lto=true"
 hostmakedepends="scdoc pkg-config wayland-devel wayland-protocols"
 makedepends="freetype-devel cairo-devel pango-devel wayland-devel
  libxkbcommon-devel harfbuzz-devel"
@@ -20,7 +21,6 @@ lib32disabled=yes
 
 # Build for Intel Skylake (including the Core i3-6100U), not the CI host CPU.
 CFLAGS+=" -march=skylake -mtune=skylake"
-CXXFLAGS+=" -march=skylake -mtune=skylake"
 
 # Void's tofi recipe requires the separate fts implementation on musl.
 if [ "$XBPS_TARGET_LIBC" = musl ]; then
